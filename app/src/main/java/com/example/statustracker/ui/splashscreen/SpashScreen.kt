@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -61,7 +62,8 @@ fun SplashScreen(navController: NavHostController) {
             contentDescription = "Splash Image",
             modifier = Modifier
                 .fillMaxWidth()
-                .alpha(alphaAnim.value)
+                .alpha(alphaAnim.value),
+            contentScale = ContentScale.Crop
         )
         Text(
             text = "\"Find a place where you can easily access your goals, plan ahead, and track your progress\"",

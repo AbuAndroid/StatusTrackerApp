@@ -1,5 +1,6 @@
 package com.example.statustracker.ui.homescreen
 
+import android.util.Log
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -45,16 +46,6 @@ class HomeScreenViewModel(
 
     init {
         fetchWorkStatus()
-        viewModelScope.launch {
-            dataStoreManager.getCurrentDate.collect{ dateFromPreference->
-                if (dateFromPreference != null) {
-                    viewModelState.update {
-                        it.copy(isVerified = dateFromPreference.isNotEmpty())
-                    }
-                }
-            }
-        }
-
     }
 
     fun refresh() = viewModelScope.launch {
@@ -70,27 +61,28 @@ class HomeScreenViewModel(
             viewModelScope.launch {
                 when (val response = repository.getWorkStatusList()) {
                     is CustomResponse.Success -> {
-                        val todayWorkStatus = response.data.last()
+                        val todayWorkStatus = response.data[response.data.size-2]
+                        Log.e("date",response?.data[response.data.size-2].toString())
                         statusNotEnteredList.clear()
                         if (todayWorkStatus?.palani?.isEmpty() == true) {
-                            statusNotEnteredList.add(todayWorkStatus.palaniSlackId!!)
+                            todayWorkStatus.palaniSlackId?.let { statusNotEnteredList.add(it) }
                         }
                         if (todayWorkStatus?.balaji?.isEmpty() == true) {
-                            statusNotEnteredList.add(todayWorkStatus.balajiSlackId!!)
+                            todayWorkStatus.balajiSlackId?.let { statusNotEnteredList.add(it) }
                         }
                         if (todayWorkStatus?.saran?.isEmpty() == true) {
-                            statusNotEnteredList.add(todayWorkStatus.saranSlackId!!)
+                            todayWorkStatus.saranSlackId?.let { statusNotEnteredList.add(it) }
                         }
                         if (todayWorkStatus?.fazil?.isEmpty() == true) {
-                            statusNotEnteredList.add(todayWorkStatus.fazilSlackId!!)
+                            todayWorkStatus.fazilSlackId?.let { statusNotEnteredList.add(it) }
                         }
                         if (todayWorkStatus?.maruthu?.isEmpty() == true) {
-                            statusNotEnteredList.add(todayWorkStatus.maruthuSlackId!!)
+                            todayWorkStatus.maruthuSlackId?.let { statusNotEnteredList.add(it) }
                         }
                         if (todayWorkStatus?.abdullah?.isEmpty() == true) {
-                            statusNotEnteredList.add(todayWorkStatus.abdullahSlackId!!)
+                            todayWorkStatus.abdullahSlackId?.let { statusNotEnteredList.add(it) }
                         }
-                        
+
                         viewModelState.update {
                             it.copy(
                                 palaniSlackId = todayWorkStatus?.palaniSlackId,
@@ -130,11 +122,14 @@ class HomeScreenViewModel(
     fun onSubmitTask() {
         viewModelScope.launch {
             viewModelState.value.date?.let { dataStoreManager.saveCurrentDateFromSheet(it) }
-
-            repository.updateStatusToSlack(getSlackInputModel())
-            viewModelState.value.date?.let { date->
-                dataStoreManager.saveCurrentDateFromSheet(date = date)
+            dataStoreManager.getCurrentDate.collect{ dateFromPreference->
+                if (dateFromPreference != null) {
+                    viewModelState.update {
+                        it.copy(isVerified = dateFromPreference.isNotEmpty())
+                    }
+                }
             }
+            repository.updateStatusToSlack(getSlackInputModel())
         }
     }
 
@@ -143,7 +138,7 @@ class HomeScreenViewModel(
             pretext = "cc- @Muthuram Saran",
             username = "DigiClass - Mobile Team daily status",
             text = "Palani - ${viewModelState.value.palani}.\n Balaji - ${viewModelState.value.balaji}. \n Saran - ${viewModelState.value.saran}.\n Fazil -  ${viewModelState.value.fazil}.\n Maruthu -  ${viewModelState.value.maruthu}. \n Abdullah -  ${viewModelState.value.abdullah}.",
-            channel = if (isAlert) "#mobile-dev-team" else "#test-dailyprogress"
+            channel = if (isAlert) "#test-dailyprogress" else "#mobile"
         )
     }
 

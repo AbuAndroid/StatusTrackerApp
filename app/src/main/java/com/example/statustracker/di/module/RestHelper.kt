@@ -7,7 +7,7 @@ import org.koin.core.component.KoinComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object RestHelper:KoinComponent {
+object  RestHelper:KoinComponent {
 
     private fun loggingInterceptor() =
         HttpLoggingInterceptor().apply {
